@@ -211,6 +211,11 @@
   .trend-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
   .trend-head h4{font-size:14.5px;color:var(--navy);font-weight:600;}
   .trend-head span.src{font-size:11.5px;color:var(--slate-2);font-family:'IBM Plex Mono',monospace;}
+  .trend-current{display:flex;gap:22px;margin-bottom:16px;flex-wrap:wrap;}
+  .trend-current .stat{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 16px;}
+  .trend-current .stat .lbl{font-size:11px;color:var(--slate-2);text-transform:uppercase;letter-spacing:.03em;font-weight:600;}
+  .trend-current .stat .num{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:var(--navy);margin-top:2px;}
+  .trend-end-label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;}
   .trend-legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px;}
   .trend-legend .li{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--slate);}
   .trend-legend .ln{width:16px;height:0;border-top-width:2.5px;border-top-style:solid;}
@@ -491,6 +496,10 @@
             <h4>Total users by day — Organic Search, Jul 2026</h4>
             <span class="src">Source: GA4 · User acquisition</span>
           </div>
+          <div class="trend-current">
+            <div class="stat"><div class="lbl">Total users — Jul 2026</div><div class="num">17,879</div></div>
+            <div class="stat"><div class="lbl">vs. Jun 2026</div><div class="num">15,931</div></div>
+          </div>
           <div class="trend-legend">
             <div class="li"><span class="ln" style="border-color:var(--navy);"></span>Total users, Jul 2026</div>
           </div>
@@ -503,6 +512,10 @@
           <div class="trend-head">
             <h4>Total users by day — Organic Search, Jul 2026</h4>
             <span class="src">Source: GA4 · User acquisition</span>
+          </div>
+          <div class="trend-current">
+            <div class="stat"><div class="lbl">Total users — Jul 2026</div><div class="num">17,879</div></div>
+            <div class="stat"><div class="lbl">vs. Jul 2025</div><div class="num">14,279</div></div>
           </div>
           <div class="trend-legend">
             <div class="li"><span class="ln" style="border-color:var(--navy);"></span>Total users, Jul 2026</div>
@@ -536,6 +549,11 @@
             <h4>Clicks &amp; impressions by day</h4>
             <span class="src">Source: GSC · Performance on Search results</span>
           </div>
+          <div class="trend-current">
+            <div class="stat"><div class="lbl">Clicks — Jul 2026</div><div class="num">13.7K</div></div>
+            <div class="stat"><div class="lbl">Impressions — Jul 2026</div><div class="num">334K</div></div>
+            <div class="stat"><div class="lbl">vs. Jun 2026</div><div class="num">14.5K / 306K</div></div>
+          </div>
           <div class="trend-legend">
             <div class="li"><span class="ln" style="border-color:#3B6FE0;"></span>Clicks, Jul 2026</div>
             <div class="li"><span class="ln dashed" style="border-color:#3B6FE0;"></span>Clicks, Jun 2026</div>
@@ -551,6 +569,11 @@
           <div class="trend-head">
             <h4>Clicks &amp; impressions by day</h4>
             <span class="src">Source: GSC · Performance on Search results</span>
+          </div>
+          <div class="trend-current">
+            <div class="stat"><div class="lbl">Clicks — Jul 2026</div><div class="num">13.7K</div></div>
+            <div class="stat"><div class="lbl">Impressions — Jul 2026</div><div class="num">334K</div></div>
+            <div class="stat"><div class="lbl">vs. Jul 2025</div><div class="num">18.8K / 394K</div></div>
           </div>
           <div class="trend-legend">
             <div class="li"><span class="ln" style="border-color:#3B6FE0;"></span>Clicks, Jul 2026</div>
@@ -818,17 +841,27 @@ function drawGrid(svg, w, h, padTop, padBottom, yLabels){
   svg.insertAdjacentHTML('beforeend', g+gx);
 }
 
-function drawLine(svg, data, axisMax, color, dashed, w, h, padTop, padBottom){
+function drawLine(svg, data, axisMax, color, dashed, w, h, padTop, padBottom, endLabel){
   const pts = linePoints(data, axisMax, w, h, padTop, padBottom);
   const dash = dashed ? `stroke-dasharray="5,4"` : '';
   svg.insertAdjacentHTML('beforeend', `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.25" ${dash} stroke-linejoin="round" stroke-linecap="round"/>`);
+  if(endLabel){
+    const plotH = h - padTop - padBottom;
+    const lastV = data[data.length-1];
+    const ex = w, ey = padTop + plotH - (lastV/axisMax)*plotH;
+    const boxW = endLabel.length*6.2+12;
+    const labelX = w - boxW - 2;
+    svg.insertAdjacentHTML('beforeend', `<circle cx="${ex}" cy="${ey}" r="4" fill="${color}"></circle>
+      <rect x="${labelX}" y="${ey-22}" width="${boxW}" height="17" rx="4" fill="${color}"></rect>
+      <text class="trend-end-label" x="${labelX+6}" y="${ey-10}" fill="#fff">${endLabel}</text>`);
+  }
 }
 
 function buildGa4Chart(id, data){
   const svg = document.getElementById(id);
   const w=620,h=200,padTop=14,padBottom=18;
   drawGrid(svg, w, h, padTop, padBottom, ["0","500","1K","1.5K"]);
-  drawLine(svg, data, 1500, "var(--red)", false, w, h, padTop, padBottom);
+  drawLine(svg, data, 1500, "var(--red)", false, w, h, padTop, padBottom, "17,879 total");
   // gradient fill under line
   const pts = linePoints(data, 1500, w, h, padTop, padBottom);
   svg.insertAdjacentHTML('afterbegin', `<polygon points="0,${h-padBottom} ${pts} ${w},${h-padBottom}" fill="url(#ga4fill)"></polygon>
@@ -840,9 +873,9 @@ function buildGscChart(id, clicksCurr, clicksPrev, imprCurr, imprPrev, clicksMax
   const w=620,h=200,padTop=14,padBottom=18;
   drawGrid(svg, w, h, padTop, padBottom, ["0 clicks / 0 impr.", "", `Clicks max ${clicksMaxLbl}`, `Impr. max ${imprMaxLbl}`]);
   drawLine(svg, imprPrev, imprMax, "#5B2E9E", true, w, h, padTop, padBottom);
-  drawLine(svg, imprCurr, imprMax, "#5B2E9E", false, w, h, padTop, padBottom);
+  drawLine(svg, imprCurr, imprMax, "#5B2E9E", false, w, h, padTop, padBottom, "334K impr.");
   drawLine(svg, clicksPrev, clicksMax, "#3B6FE0", true, w, h, padTop, padBottom);
-  drawLine(svg, clicksCurr, clicksMax, "#3B6FE0", false, w, h, padTop, padBottom);
+  drawLine(svg, clicksCurr, clicksMax, "#3B6FE0", false, w, h, padTop, padBottom, "13.7K clicks");
 }
 
 buildGa4Chart("chart-ga4-mom", ga4Daily);
